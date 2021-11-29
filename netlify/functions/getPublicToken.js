@@ -17,6 +17,7 @@ exports.handler = async (event, context) => {
       }
     );
     const token = await response.json();
+    console.log('TOKEN :', token)
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -24,6 +25,7 @@ exports.handler = async (event, context) => {
       }),
     };
   } catch (err) {
+    console.log(err)
     return {
       statusCode: err.statusCode || 500,
       body: JSON.stringify({
