@@ -89,6 +89,9 @@ function Layout({ children }: React.PropsWithChildren<{}>) {
           <nav aria-label="Main navigation" className="remix-app__header-nav">
             <ul>
               <li>
+                <Link to="/lk">ЛК</Link>
+              </li>
+              <li>
                 <Link to="/">Home</Link>
               </li>
               <li>

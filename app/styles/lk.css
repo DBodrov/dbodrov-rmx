@@ -1,0 +1,24 @@
+.form {
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  max-width: 704px;
+  width: 100%;
+}
+
+.amount-input {
+  height: 3rem;
+  width: 300px;
+}
+
+.submit-button {
+  width: 200px;
+  height: 3rem;
+  background-color: rgb(22, 21, 102);
+  color: #fff;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+}
