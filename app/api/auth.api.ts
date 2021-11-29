@@ -1,9 +1,9 @@
-import fetch from 'node-fetch';
-
-export async function readPublicToken(amount: FormDataEntryValue) {
+export async function readPublicToken(request: Request) {
   try {
-    
-    const response = await fetch('http://localhost:3000/api/getPublicToken');
+    const {protocol, host} = new URL(request.url);
+    const SERVER_URL = `${protocol}//${host}`
+    console.log('SERVER_URL :', SERVER_URL)
+    const response = await fetch(`${SERVER_URL}/api/getPublicToken`);
     const token = await response.json();
     
     console.log('try readPubToken', token)
