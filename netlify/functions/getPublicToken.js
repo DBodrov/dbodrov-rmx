@@ -23,7 +23,7 @@ exports.handler = async (event, context) => {
         data: token,
       }),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: err.statusCode || 500,
       body: JSON.stringify({
