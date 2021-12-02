@@ -1,100 +1,47 @@
-import type { MetaFunction, LoaderFunction } from "remix";
-import { useLoaderData, json, Link } from "remix";
+import React from "react";
+import stylesUrl from "~/styles/lk.css";
+import { Form, json, useActionData, redirect } from "remix";
+import type { LinksFunction, ActionFunction } from "remix";
+import { readPublicToken } from "~/api/auth.api";
 
-type IndexData = {
-  resources: Array<{ name: string; url: string }>;
-  demos: Array<{ name: string; to: string }>;
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: stylesUrl }];
 };
 
-// Loaders provide data to components and are only ever called on the server, so
-// you can connect to a database or run any server side code you want right next
-// to the component that renders it.
-// https://remix.run/api/conventions#loader
-export let loader: LoaderFunction = () => {
-  let data: IndexData = {
-    resources: [
-      {
-        name: "Remix Docs",
-        url: "https://remix.run/docs"
-      },
-      {
-        name: "React Router Docs",
-        url: "https://reactrouter.com/docs"
-      },
-      {
-        name: "Remix Discord",
-        url: "https://discord.gg/VBePs6d"
-      }
-    ],
-    demos: [
-      {
-        to: "demos/actions",
-        name: "Actions"
-      },
-      {
-        to: "demos/about",
-        name: "Nested Routes, CSS loading/unloading"
-      },
-      {
-        to: "demos/params",
-        name: "URL Params and Error Boundaries"
-      }
-    ]
-  };
-
-  // https://remix.run/api/remix#json
-  return json(data);
+export const action: ActionFunction = async ({ request, context, params }) => {
+  const formData = await request.formData();
+  const amount = formData.get("amount");
+  if (!amount || isNaN(Number(amount))) {
+    return json({ error: "Укажите сумму" }, { status: 400 });
+  }
+  const publicToken = await readPublicToken(request);
+  const PAYMENT_HOST = process.env.NODE_ENV === 'development' ? 'https://localhost:6333' : 'https://payment-t.netlify.app';
+  const paymentUrl = `${PAYMENT_HOST}/4244?paidservice_id=4244&LS=100340011200&_SUM=${amount}&region_id=1022&ADDRESS=%D0%B3+%D0%9F%D0%B5%D1%82%D1%80%D0%BE%D0%B7%D0%B0%D0%B2%D0%BE%D0%B4%D1%81%D0%BA%2C+%D0%BF%D1%80%D0%BE%D0%B5%D0%B7%D0%B4+%D0%A1%D0%BA%D0%B0%D0%BD%D0%B4%D0%B8%D0%BD%D0%B0%D0%B2%D1%81%D0%BA%D0%B8%D0%B9%2C+%D0%B4.6%D0%B4%D0%BE%D0%B314080+%D0%BA%D0%B2.7&url=https%3A%2F%2Flk.karelia.tns-e.ru%2Flk-pay&pay=true&channel=2&lk=&jwt=${publicToken.data}`;
+  return json({ data: paymentUrl }, 200);
 };
 
-// https://remix.run/api/conventions#meta
-export let meta: MetaFunction = () => {
-  return {
-    title: "Remix Starter",
-    description: "Welcome to remix!"
-  };
-};
+export default function LKPage() {
+  const actionData = useActionData();
+  const hasError = Boolean(actionData?.error);
 
-// https://remix.run/guides/routing#index-routes
-export default function Index() {
-  let data = useLoaderData<IndexData>();
+  React.useEffect(() => {
+    if (actionData?.data) {
+      window.location.assign(actionData.data);
+    }
+  }, [actionData]);
 
   return (
-    <div className="remix__page">
-      <main>
-        <h2>Welcome to Remix!</h2>
-        <p>We're stoked that you're here. 🥳</p>
-        <p>
-          Feel free to take a look around the code to see how Remix does things,
-          it might be a bit different than what you’re used to. When you're
-          ready to dive deeper, we've got plenty of resources to get you
-          up-and-running quickly.
-        </p>
-        <p>
-          Check out all the demos in this starter, and then just delete the{" "}
-          <code>app/routes/demos</code> and <code>app/styles/demos</code>{" "}
-          folders when you're ready to turn this into your next project.
-        </p>
-      </main>
-      <aside>
-        <h2>Demos In This App</h2>
-        <ul>
-          {data.demos.map(demo => (
-            <li key={demo.to} className="remix__page__resource">
-              <Link to={demo.to} prefetch="intent">
-                {demo.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <h2>Resources</h2>
-        <ul>
-          {data.resources.map(resource => (
-            <li key={resource.url} className="remix__page__resource">
-              <a href={resource.url}>{resource.name}</a>
-            </li>
-          ))}
-        </ul>
-      </aside>
-    </div>
+    <section>
+      
+      <h1>Личный кабинет</h1>
+      <Form method="post" className="form">
+        <label htmlFor="amount">Сумма платежа</label>
+        <input autoComplete="off" className={`amount-input ${hasError && 'input-error'}`} type="tel" name="amount" id="amount" />
+        {hasError ? <span className="error-text" role="alert">{actionData.error}</span> : null}
+        <button type="submit" className="submit-button">
+          Оплатить
+        </button>
+      </Form>
+    </section>
   );
 }
